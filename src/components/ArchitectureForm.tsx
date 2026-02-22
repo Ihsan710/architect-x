@@ -44,20 +44,13 @@ export default function ArchitectureForm({ onSubmit, isLoading }: ArchitectureFo
                 body: JSON.stringify({ prompt: input })
             });
 
-            if (!res.ok) throw new Error("AI Stream Failed");
-            if (!res.body) throw new Error("No Readable Stream");
+            if (!res.ok) throw new Error("AI Request Failed");
 
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder("utf-8");
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+            setCompletion(data.text);
 
-                // Decode the byte chunk specifically, preserving spaces
-                const chunk = decoder.decode(value, { stream: true });
-                setCompletion(prev => prev + chunk);
-            }
         } catch (error) {
             console.error(error);
             setCompletion("Error generating AI concept. Please check API Key.");
