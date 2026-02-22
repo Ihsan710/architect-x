@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { ArchitectureOutput, EnhancementResponse } from '@/types';
 
+export const maxDuration = 60; // Extended timeout for Vercel Hobby limits
+export const dynamic = 'force-dynamic';
+
 // Helper to inject a node into a Mermaid Monolith diagram string
 function injectMonolithNode(diagram: string, nodeId: string, nodeName: string, connectionPath: string = "api -.->"): string {
     // Find the end of the Application subgraph
@@ -19,8 +22,6 @@ function injectMicroserviceNode(diagram: string, nodeId: string, nodeName: strin
     }
     return diagram;
 }
-
-export const runtime = 'edge';
 
 export async function POST(req: Request) {
     try {

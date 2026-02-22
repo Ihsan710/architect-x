@@ -1,7 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { streamText } from "ai";
 
-export const runtime = 'edge';
+export const maxDuration = 60; // Extended timeout for Vercel Hobby limits
 
 export async function POST(req: Request) {
     try {
@@ -31,7 +31,13 @@ Example Output: "A global real-time messaging platform supporting 50 million con
         });
 
         // 4. Return the streaming text response instantly to the frontend
-        return result.toTextStreamResponse();
+        return result.toTextStreamResponse({
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            }
+        });
 
     } catch (error: any) {
         console.error("AI Ideation Error:", error);
