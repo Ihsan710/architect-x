@@ -15,17 +15,17 @@ An intelligent, highly-visual cloud topology generator built with a premium "dee
 
 *   **Intelligent Topology Generation:** Translates natural language project requirements into structured architectures (Monoliths vs. Microservices).
 *   **Dynamic Mermaid Graphs:** Renders complex, zoomable, and visually clean system diagrams in real-time.
-*   **V3 AI Enhancement Engine:** An intelligent overlay that analyzes the base architecture and heuristically injects critical layers (Redis caching, Read Replicas, WebSockets, Alerting Systems) based on traffic logic.
-*   **Visual Cost Estimator:** Real-time computation of monthly infrastructure costs, broken down into a responsive donut chart (powered by Recharts).
-*   **Premium Glassmorphism UI:** Features a custom hardware-accelerated 100,000-star animated background, glowing neomorphic cards, and fluid 60FPS stagger animations via Framer Motion.
+*   **V4 AI Ideation Engine (Gemini 2.0):** Instantly generate professional project concept briefs from a single keyword. Focuses on actionable requirements and infrastructure needs.
+*   **Fully Editable Concepts:** AI-generated text is written directly into the main project input, allowing users to backspace, modify, and refine AI ideas before generation.
 *   **One-Click Image Export:** Instantly download high-resolution PNGs of your generated cloud topology graphs for presentations.
 *   **Raw Diagram Editor:** A live-updating syntax editor allowing power users to modify the generated Mermaid code on the fly.
 *   **Interactive Explainers:** Deep-space modals providing instant definitions for over 20+ different infrastructure components.
 
 ## 🚀 Tech Stack
 
-ARCHITECT-X is built entirely on free-tier technologies, requiring zero paid external APIs or database connections to operate:
+ARCHITECT-X is built on a modern, high-performance stack:
 
+*   **Model:** Google Gemini 2.0 Flash (Native SDK)
 *   **Framework:** Next.js 14 (App Router)
 *   **Styling:** Tailwind CSS + Vanilla CSS Keyframes
 *   **Animations:** Framer Motion
@@ -42,29 +42,31 @@ ARCHITECT-X is built entirely on free-tier technologies, requiring zero paid ext
     cd architect-x
     ```
 
-2.  **Install dependencies:**
+2.  **Add your local environment variables:**
+    Create a `.env` file in the root directory:
+    ```text
+    GEMINI_API_KEY=your_key_here
+    ```
+
+3.  **Install dependencies:**
     ```bash
     npm install
     ```
 
-3.  **Start the development server:**
+4.  **Start the development server:**
     ```bash
     npm run dev
     ```
 
-4.  **Open the app:**
-    Navigate to `http://localhost:3000` in your browser.
-
 ## 🌐 Deploying to Vercel
 
-This project is completely optimized for Vercel Edge deployments out of the box. 
+This project is completely optimized for Vercel Edge deployments. 
 
 1. Push your code to your GitHub repository.
 2. Go to [Vercel.com](https://vercel.com/) and click **Add New Project**.
 3. Import your `architect-x` repository.
-4. Click **Deploy**.
-
-*No environment variables required!*
+4. **Environment Variables:** Add `GEMINI_API_KEY` with your Google AI Studio key.
+5. Click **Deploy**.
 
 ---
 *Built with precision for modern cloud architects.*
