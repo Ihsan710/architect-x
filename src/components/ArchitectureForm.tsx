@@ -23,21 +23,51 @@ const inputVariants: Variants = {
     show: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
 };
 
-import { useCompletion } from "@ai-sdk/react";
-
+// Custom hook removed due to Next.js 14 API strict stream bypass
 export default function ArchitectureForm({ onSubmit, isLoading }: ArchitectureFormProps) {
     const [projectName, setProjectName] = useState("");
     const [scale, setScale] = useState<ProjectScale>("small");
 
-    // V4 AI Ideation Engine integration
-    const { completion, input, handleInputChange, complete, isLoading: isAiLoading } = useCompletion({
-        api: '/api/ideate',
-    });
+    const [input, setInput] = useState("");
+    const [completion, setCompletion] = useState("");
+    const [isAiLoading, setIsAiLoading] = useState(false);
+
+    const handleAiIdeation = async () => {
+        if (isAiLoading) return;
+        setIsAiLoading(true);
+        setCompletion("");
+
+        try {
+            const res = await fetch('/api/ideate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: input })
+            });
+
+            if (!res.ok) throw new Error("AI Stream Failed");
+            if (!res.body) throw new Error("No Readable Stream");
+
+            const reader = res.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                // Decode the byte chunk specifically, preserving spaces
+                const chunk = decoder.decode(value, { stream: true });
+                setCompletion(prev => prev + chunk);
+            }
+        } catch (error) {
+            console.error(error);
+            setCompletion("Error generating AI concept. Please check API Key.");
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Since Vercel AI splits 'input' (user prompt) and 'completion' (AI output), 
-        // we use either the completion result or the user's manual input as the final description
         const finalDescription = completion || input;
         onSubmit({ projectName, scale, description: finalDescription });
     };
@@ -135,16 +165,21 @@ export default function ArchitectureForm({ onSubmit, isLoading }: ArchitectureFo
                     </label>
                     <button
                         type="button"
-                        onClick={() => complete(input || "")}
+                        onClick={handleAiIdeation}
                         disabled={isAiLoading || isLoading}
                         className="text-xs flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition-colors disabled:opacity-50 shadow-[0_0_15px_-3px_rgba(168,85,247,0.4)]"
                     >
                         {isAiLoading ? (
-                            <span className="w-3 h-3 rounded-full border border-purple-300 border-t-transparent animate-spin" />
+                            <>
+                                <span className="w-3 h-3 rounded-full border border-purple-300 border-t-transparent animate-spin" />
+                                Synthesizing...
+                            </>
                         ) : (
-                            <Sparkles className="w-3 h-3" />
+                            <>
+                                <Sparkles className="w-3 h-3" />
+                                AI Idea Generator
+                            </>
                         )}
-                        AI Idea Generator
                     </button>
                 </div>
 
@@ -155,7 +190,7 @@ export default function ArchitectureForm({ onSubmit, isLoading }: ArchitectureFo
                         minLength={20}
                         rows={5}
                         value={completion || input}
-                        onChange={handleInputChange}
+                        onChange={(e) => setInput(e.target.value)}
                         placeholder="Type 'a global chat app' and hit AI Generator, or describe your system explicitly mentioning realtime, analytics, alerts..."
                         className="glass-input resize-none relative z-10 bg-slate-900/80 backdrop-blur-sm focus:ring-purple-500/20 selection:bg-purple-500/40"
                         disabled={isLoading || isAiLoading}
