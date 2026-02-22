@@ -30,8 +30,9 @@ Example Output: "A global real-time messaging platform supporting 50 million con
             temperature: 0.8, // Slightly high temperature for creative ideas
         });
 
-        // 4. Return the streaming text response instantly to the frontend
-        return result.toTextStreamResponse({
+        // 4. Return the streaming data response instantly to the frontend UI hooks
+        // @ts-ignore
+        return result.toDataStreamResponse({
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -41,7 +42,7 @@ Example Output: "A global real-time messaging platform supporting 50 million con
 
     } catch (error: any) {
         console.error("AI Ideation Error:", error);
-        return new Response(JSON.stringify({ error: "Failed to generate concept" }), {
+        return new Response(JSON.stringify({ error: "Failed to generate concept", details: error.message || error.toString() }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
         });
