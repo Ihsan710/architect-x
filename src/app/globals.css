@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.5);
+        /* slate-900 border */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: rgba(59, 130, 246, 0.2);
+        /* blue-500/20 */
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(59, 130, 246, 0.4);
+    }
+}
+
+/* Base Styles */
+body {
+    background-color: #0b1120;
+    color: #cbd5e1;
+}
+
+/* Custom Component Classes */
+@layer components {
+    .premium-card {
+        @apply bg-[#0f172a] border border-white/5 shadow-2xl;
+        box-shadow: 0 0 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .glass-input {
+        @apply w-full bg-[#1e293b]/50 border border-slate-700/50 rounded-lg px-4 py-2.5 text-slate-200 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder-slate-500;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .primary-btn {
+        @apply w-full bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg px-4 py-2.5 transition-all shadow-lg shadow-blue-900/20;
+    }
+}
