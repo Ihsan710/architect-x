@@ -28,11 +28,13 @@ Example Output: "A global real-time messaging platform supporting 50 million con
             system: systemPrompt,
             prompt: userPrompt,
             temperature: 0.8, // Slightly high temperature for creative ideas
+            onError: (error) => {
+                console.error("Gemini Stream Error Backend Caught:", error);
+            }
         });
 
-        // 4. Return the streaming data response instantly to the frontend UI hooks
-        // @ts-ignore
-        return result.toDataStreamResponse({
+        // 4. Return the streaming text response instantly to the frontend UI hooks
+        return result.toTextStreamResponse({
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
