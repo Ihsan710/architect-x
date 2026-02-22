@@ -26,7 +26,7 @@ Example Output: "A global real-time messaging platform supporting 50 million con
 
         // 3. Request strictly from Google
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: "gemini-flash-latest",
             systemInstruction: systemInstruction,
         });
 
