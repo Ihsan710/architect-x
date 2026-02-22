@@ -1,7 +1,12 @@
-import { google } from "@ai-sdk/google";
-import { streamText } from "ai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { streamText } from 'ai';
 
 export const maxDuration = 60; // Extended timeout for Vercel Hobby limits
+export const dynamic = 'force-dynamic'; // Prevent Vercel Edge Caching from swallowing the stream 
+
+const google = createGoogleGenerativeAI({
+    apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || '',
+});
 
 export async function POST(req: Request) {
     try {

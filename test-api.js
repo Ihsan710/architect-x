@@ -19,7 +19,7 @@ const testArchitect = async () => {
 
 const testIdeate = async () => {
     try {
-        const res = await fetch("https://architect-x-peach.vercel.app/api/ideate", {
+        const res = await fetch("http://localhost:3000/api/ideate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
