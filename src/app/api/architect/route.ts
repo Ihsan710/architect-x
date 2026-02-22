@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { ArchitectureInput, ArchitectureOutput } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 function generateArchitectureFeatures(scale: ArchitectureInput['scale'], requiresRealtime: boolean, requiresHeavyData: boolean, requiresAlerts: boolean) {
     let style: ArchitectureOutput['architectureStyle'] = 'Modular Monolith';
     let services = ['Web Server (Next.js)', 'Core API Module'];
