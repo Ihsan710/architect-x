@@ -9,6 +9,7 @@
 An intelligent, highly-visual cloud topology generator built with a premium "deep-space" aesthetic. **ARCHITECT-X** takes high-level project concepts and translates them into actionable, scale-appropriate cloud architectures using automated heuristic analysis.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Ihsan710/architect-x)
+**[🚀 View Live Demo: architect-x-5d92.vercel.app](https://architect-x-5d92.vercel.app/)**
 
 ## ✨ Features
 
