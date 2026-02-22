@@ -49,11 +49,13 @@ export default function ArchitectureForm({ onSubmit, isLoading }: ArchitectureFo
             const data = await res.json();
             if (data.error) throw new Error(data.error);
 
-            setCompletion(data.text);
+            setInput(data.text);
+            setCompletion("");
 
         } catch (error) {
             console.error(error);
-            setCompletion("Error generating AI concept. Please check API Key.");
+            setInput("Error generating AI concept. Please check API Key.");
+            setCompletion("");
         } finally {
             setIsAiLoading(false);
         }
@@ -61,8 +63,7 @@ export default function ArchitectureForm({ onSubmit, isLoading }: ArchitectureFo
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        const finalDescription = completion || input;
-        onSubmit({ projectName, scale, description: finalDescription });
+        onSubmit({ projectName, scale, description: input });
     };
 
     return (
@@ -182,7 +183,7 @@ export default function ArchitectureForm({ onSubmit, isLoading }: ArchitectureFo
                         required
                         minLength={20}
                         rows={5}
-                        value={completion || input}
+                        value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type 'a global chat app' and hit AI Generator, or describe your system explicitly mentioning realtime, analytics, alerts..."
                         className="glass-input resize-none relative z-10 bg-slate-900/80 backdrop-blur-sm focus:ring-purple-500/20 selection:bg-purple-500/40"
