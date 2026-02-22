@@ -20,6 +20,8 @@ function injectMicroserviceNode(diagram: string, nodeId: string, nodeName: strin
     return diagram;
 }
 
+export const runtime = 'edge';
+
 export async function POST(req: Request) {
     try {
         const bodyText = await req.text();

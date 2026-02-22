@@ -1,8 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { streamText } from "ai";
 
-export const maxDuration = 30; // 30 seconds max timeout
-export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 export async function POST(req: Request) {
     try {
