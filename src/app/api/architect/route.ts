@@ -125,72 +125,168 @@ function generateMermaidDiagram(
     cache: string,
     requiresRealtime: boolean
 ) {
-    let mermaid = `graph TD\n`;
-    mermaid += `  top["Client App"] --> lb["Load Balancer"]\n`;
+    let mermaid = `graph TD\n\n`;
+
+    // Classes for styling
+    mermaid += `  classDef client fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#f8fafc\n`;
+    mermaid += `  classDef app fill:#1e293b,stroke:#8b5cf6,stroke-width:2px,color:#f8fafc\n`;
+    mermaid += `  classDef data fill:#1e293b,stroke:#10b981,stroke-width:2px,color:#f8fafc\n`;
+    mermaid += `  classDef obs fill:#1e293b,stroke:#64748b,stroke-width:2px,color:#f8fafc\n`;
+    mermaid += `  classDef ai fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#f8fafc\n\n`;
+
+    // 1. Client Layer
+    mermaid += `  subgraph Client_Layer ["📱 Client Layer"]\n`;
+    mermaid += `    client["Client Application"]:::client\n`;
+    mermaid += `  end\n\n`;
+
+    // Parse Services
+    const appServices: { id: string, name: string }[] = [];
+    const aiServices: { id: string, name: string }[] = [];
+    const obsServices: { id: string, name: string }[] = [];
+
+    services.forEach((srv, i) => {
+        const id = `srv${i}`;
+        const nameLower = srv.toLowerCase();
+        if (nameLower.includes('metrics') || nameLower.includes('log') || nameLower.includes('trace') || nameLower.includes('prometheus')) {
+            obsServices.push({ id, name: srv });
+        } else if (nameLower.includes('ai') || nameLower.includes('analytics') || nameLower.includes('pipeline') || nameLower.includes('kafka')) {
+            aiServices.push({ id, name: srv });
+        } else {
+            appServices.push({ id, name: srv });
+        }
+    });
+
+    // 2. Application Layer
+    mermaid += `  subgraph App_Layer ["⚡ Application Layer"]\n`;
+    mermaid += `    lb["Load Balancer"]:::app\n`;
 
     if (style === 'Modular Monolith') {
-        mermaid += `  subgraph Application\n`;
-        mermaid += `    lb --> api["Core API Module"]\n`;
+        mermaid += `    api["Core API Module"]:::app\n`;
+    } else {
+        mermaid += `    gw{"API Gateway"}:::app\n`;
+        if (requiresRealtime) {
+            mermaid += `    rtgw{"Realtime Gateway"}:::app\n`;
+        }
+    }
 
-        services.forEach((srv, i) => {
-            if (srv !== 'Core API Module' && !srv.includes('Metrics') && srv !== 'WebSocket Gateway' && srv !== 'Realtime Gateway (SSE/WS)') {
-                mermaid += `    api -.-> srv${i}["${srv}"]\n`;
+    appServices.forEach(s => {
+        if (s.name !== 'Core API Module' && s.name !== 'API Gateway' && s.name !== 'Realtime Gateway (WS)' && s.name !== 'WebSocket Gateway' && s.name !== 'Realtime Gateway (SSE/WS)') {
+            mermaid += `    ${s.id}["${s.name}"]:::app\n`;
+        }
+    });
+
+    if (style === 'Modular Monolith' && requiresRealtime) {
+        mermaid += `    ws["Realtime Gateway"]:::app\n`;
+    }
+    mermaid += `  end\n\n`;
+
+    // 3. AI Layer (If Present)
+    if (aiServices.length > 0) {
+        mermaid += `  subgraph AI_Layer ["🧠 AI & Analytics Layer"]\n`;
+        aiServices.forEach(s => {
+            mermaid += `    ${s.id}["${s.name}"]:::ai\n`;
+        });
+        mermaid += `  end\n\n`;
+    }
+
+    // 4. Data Layer
+    mermaid += `  subgraph Data_Layer ["💾 Data Layer"]\n`;
+    mermaid += `    db[(" ${database} ")]:::data\n`;
+    if (cache !== 'None') {
+        mermaid += `    cache{"${cache}"}:::data\n`;
+    }
+    mermaid += `  end\n\n`;
+
+    // 5. Observability Layer
+    mermaid += `  subgraph Obs_Layer ["📊 Observability Layer"]\n`;
+    obsServices.forEach(s => {
+        mermaid += `    ${s.id}["${s.name}"]:::obs\n`;
+    });
+    mermaid += `  end\n\n`;
+
+    // Connect them
+    mermaid += `  %% Synchronous flows\n`;
+    mermaid += `  client --> lb\n`;
+
+    if (style === 'Modular Monolith') {
+        mermaid += `  lb --> api\n`;
+        if (requiresRealtime) {
+            mermaid += `  lb --> ws\n`;
+            mermaid += `  ws -.-> |Async Events| api\n`;
+            if (cache !== 'None') {
+                mermaid += `  ws -.-> |Pub/Sub| cache\n`;
+            }
+        }
+
+        appServices.forEach(s => {
+            if (s.name !== 'Core API Module' && s.name !== 'WebSocket Gateway' && s.name !== 'Realtime Gateway (SSE/WS)') {
+                mermaid += `  api -.-> |Internal Call| ${s.id}\n`;
+                if (!s.name.includes('Alert') && !s.name.includes('Notification')) {
+                    mermaid += `  ${s.id} -.-> db\n`;
+                }
             }
         });
-
-        if (requiresRealtime) {
-            mermaid += `    lb --> ws["Realtime Gateway"]\n`;
-            mermaid += `    ws -.-> api\n`;
-            if (cache !== 'None') {
-                mermaid += `    ws -.-> cache{"${cache}"}\n`;
-            }
-        }
-
-        mermaid += `  end\n`;
-        mermaid += `  api --> db[(" ${database} ")]\n`;
-        if (cache !== 'None') {
-            mermaid += `  api --> cache{"${cache}"}\n`;
-        }
+        mermaid += `  api --> db\n`;
+        if (cache !== 'None') mermaid += `  api --> cache\n`;
 
     } else {
-        mermaid += `  subgraph Container_Orchestrator\n`;
-        mermaid += `    lb --> gw{"API Gateway"}\n`;
+        mermaid += `  lb --> gw\n`;
         if (requiresRealtime) {
-            mermaid += `    lb --> rtgw{"Realtime Gateway"}\n`;
+            mermaid += `  lb --> rtgw\n`;
         }
 
-        services.forEach((srv, i) => {
-            if (srv !== 'API Gateway' && srv !== 'Realtime Gateway (WS)' && !srv.includes('Metrics')) {
-                // Determine connection origins
-                if (srv.includes('Notification') || srv.includes('Alert')) {
-                    mermaid += `    gw --> srv${i}["${srv}"]\n`;
-                } else {
-                    mermaid += `    gw --> srv${i}["${srv}"]\n`;
-                    mermaid += `    srv${i} --> db[(" ${database} ")]\n`;
+        appServices.forEach(s => {
+            if (s.name !== 'API Gateway' && s.name !== 'Realtime Gateway (WS)') {
+                mermaid += `  gw --> ${s.id}\n`;
+                if (!s.name.includes('Alert') && !s.name.includes('Notification')) {
+                    mermaid += `  ${s.id} --> db\n`;
                 }
                 if (cache !== 'None') {
-                    if (srv.includes('Alert') || srv.includes('Notification')) {
-                        mermaid += `    cache --> srv${i}\n`; // Pub sub consumer
+                    if (s.name.includes('Alert') || s.name.includes('Notification')) {
+                        mermaid += `  cache -.-> |Pub/Sub| ${s.id}\n`;
                     } else {
-                        mermaid += `    srv${i} --> cache{"${cache}"}\n`; // Pub sub publisher or standard cache
+                        mermaid += `  ${s.id} --> cache\n`;
                     }
                 }
             }
         });
 
         if (requiresRealtime && cache !== 'None') {
-            mermaid += `    rtgw --> cache\n`; // Realtime connects to Pub/Sub
+            mermaid += `  rtgw --> cache\n`;
         }
-
-        mermaid += `  end\n`;
     }
 
-    // Add Observability Layer universally
-    mermaid += `  subgraph Observability\n`;
-    mermaid += `    obs["Metrics, Logs & Tracing"]\n`;
-    mermaid += `  end\n`;
-    mermaid += `  Application -.-> obs\n`;
-    mermaid += `  Container_Orchestrator -.-> obs\n`;
+    // AI connections
+    if (aiServices.length > 0) {
+        mermaid += `  %% Asynchronous & Background Processing\n`;
+        const entryNodes = style === 'Modular Monolith' ? ['api'] : ['gw'];
+        entryNodes.forEach(gw => {
+            aiServices.forEach(ai => {
+                if (ai.name.includes('Pipeline') || ai.name.includes('Kafka')) {
+                    mermaid += `  ${gw} -.-> |Async Streams| ${ai.id}\n`;
+                }
+            });
+        });
+
+        // Pipeline to analytics
+        const pipeline = aiServices.find(s => s.name.includes('Pipeline') || s.name.includes('Kafka'));
+        aiServices.filter(s => s !== pipeline).forEach(ai => {
+            mermaid += `  ${pipeline ? pipeline.id : entryNodes[0]} -.-> |Batch Process| ${ai.id}\n`;
+            mermaid += `  ${ai.id} -.-> db\n`;
+        });
+        if (pipeline) mermaid += `  ${pipeline.id} -.-> db\n`;
+    }
+
+    // Obs Connections
+    mermaid += `  %% Monitoring & Metrics\n`;
+    const obsNode = obsServices.length > 0 ? obsServices[0].id : null;
+    if (obsNode) {
+        mermaid += `  App_Layer -.-> |Logs & Metrics| ${obsNode}\n`;
+        mermaid += `  Data_Layer -.-> |Health Checks| ${obsNode}\n`;
+        if (aiServices.length > 0) {
+            mermaid += `  AI_Layer -.-> |Telemetry| ${obsNode}\n`;
+        }
+    }
 
     return mermaid;
 }
